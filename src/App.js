@@ -18,6 +18,7 @@ import EditProfile from "./pages/Auth/EditProfile";
 import Signup from "./pages/Auth/Signup";
 import Login from "./pages/Auth/Login";
 import Forgot from "./pages/Auth/Forgot";
+import Link from "./pages/Link";
 import useAuth from "./hooks/useAuth";
 import UserContext from "./contexts/UserContext";
 
@@ -62,6 +63,8 @@ const App = () => {
           <Route path = "/register" component = { Signup } /> 
           <Route path = "/login" component = { Login } />
           <Route path = "/forgot" component = { Forgot } />
+          <Route path = "/link/:linkId" component = { Link } />
+
           <Route component = { ( ) => <Redirect to = "/news" /> } /> 
       </IonRouterOutlet>
       <IonTabBar slot = "bottom">
