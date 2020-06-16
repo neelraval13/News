@@ -6,12 +6,15 @@ import { IonPage, IonContent, IonGrid, IonRow, IonCol, IonButton } from '@ionic/
 import NavHeader from '../components/Header/NavHeader';
 import { closeCircleOutline } from 'ionicons/icons';
 import LinkItem from '../components/Link/LinkItem';
+import CommentModal from '../components/Link/CommentModal';
+import LinkComment from '../components/Link/LinkComment';
 
 const { Browser } = Plugins;
 
 const Link = ( props ) => { 
     const { user } = React.useContext(UserContext);
     const [link, setLink] = React.useState(null);
+    const [showModal, setshowModal] = React.useState(false);
     const linkId = props.match.params.linkId;
     const linkRef = firebase.db.collection("links").doc(linkId);
 
@@ -19,6 +22,46 @@ const Link = ( props ) => {
         getLink();
         // eslint-disable-next-line
     }, [linkId] )
+
+    function handleOpenModal() { 
+        if (!user) { 
+            props.history.push("/login");
+        }
+        else { 
+            setshowModal(true);
+        }
+    }
+
+    function handleCloseModal() { 
+        setshowModal(false);
+    }
+
+    function handleAddComment(commentText) { 
+        if (!user) {
+            props.history.push("/login");
+        }
+        else {
+            linkRef.get().then( (doc) => { 
+                if (doc.exists) { 
+                    const previousComments = doc.data().comments;
+                    const newComment  = { 
+                        postedBy: { id: user.uid, name: user.displayName },
+                        created: Date.now(),
+                        text: commentText,
+                    };
+                    const updatedComments = [...previousComments, newComment];
+                    linkRef.update( { comments: updatedComments } );
+                    setLink( (prevState) => ( { 
+                        ...prevState,
+                        comments: updatedComments,
+                    }));
+                }
+            });
+            setshowModal(false);
+        }
+    }
+
+
 
     function getLink() {
         linkRef.get().then( ( doc ) => { 
@@ -79,6 +122,12 @@ const Link = ( props ) => {
             action = { handleDeleteLink }
             />
             <IonContent>
+                <CommentModal
+                isOpen = { showModal }
+                title = "New Comment"
+                sendAction = { handleAddComment }
+                closeAction = { handleCloseModal }
+                />
                 {link && ( 
                     <>
                     <IonGrid>
@@ -88,9 +137,20 @@ const Link = ( props ) => {
                                 <IonButton onClick = {() => handleAddVote()} size = "small">
                                     Upvote
                                 </IonButton>
+                                <IonButton onClick = { ( ) => handleOpenModal() } size = "small">
+                                    Comment
+                                </IonButton>
                             </IonCol>
                         </IonRow>
                     </IonGrid>
+                    {link.comments.map( (comment, index) => ( 
+                        <LinkComment 
+                        key = { index }
+                        comment = { comment }
+                        link = { link } 
+                        setLink = { setLink }
+                        />
+                    ))}
                     </>
                 )}
             </IonContent>
