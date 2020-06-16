@@ -37,6 +37,10 @@ const LinkList = ( props ) => {
         { links.map( (link, index) => (
             <LinkItem 
             key = { link.id }
+            showCount = { true }
+            url = { `/link/${link.id}`}
+            link = { link }
+            index = { index + 1 }
             />
         ))}
         </>
